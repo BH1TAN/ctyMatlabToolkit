@@ -8,6 +8,7 @@ function [dataout,HeadData]=readptrac( outputType,nps,maxEventsPerHistory,nHeadL
 % nps: Simulated particle number
 % maxEventsPerHistory: use only for memory allocation
 % nHeadLine: Count of lines before the particle data (like '1 3000' line).      
+lineNo = 1;
 
 if(maxEventsPerHistory<=0)
     maxEventsPerHistory = 4000;
@@ -20,20 +21,23 @@ else
     disp(['User selected--',fullfile(pathname,filename)]);
 end
 fp=fullfile(pathname,filename);
+maxLine= howmanylines(fp);
 fidin=fopen(fp);
 dataout = cell(nps,1);
 HistoryBuffer = zeros(maxEventsPerHistory,10);
 History = 1;
 DataBufferLine = 1;
 LastHistoryFlag = 0;
-HeadData = zeros(9,[]);
+HeadData = [];
 strFlag = 0;
 for i=1:nHeadLine %读取ptrac文件头
     HeadLine = str2double(regexp(fgetl(fidin),'\s+','split'));
     HeadData(i,1:size(HeadLine,2)) = HeadLine;
 end
 while 1
+    processbar(lineNo,maxLine,1000);
     str = fgetl(fidin);
+    lineNo = lineNo+1;
     if str~=-1
         DataRow = str2double(regexp(str,'\s+','split'));
     else

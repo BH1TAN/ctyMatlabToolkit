@@ -1,15 +1,14 @@
 function s = readlist(fileExp,varargin)
 % 读取apg7400的list mode 模式形成的若干个txt文件，据输入参数输出能谱或list
-% 保存能谱结构体
-% list矩阵会很长，需要注意
-% 目前不能读取ch0的数值
+% txt每行为逗号分隔的时刻，输入道，道址
+% 输入道为0无法读取
 %
 % INPUTS：
 % fileExp: 文件名正则表达式
 % 'sep'：s.list将拆为各道list
 % 'spec': 计算各输入道能谱s.spec
 % 'save': 保存
-%
+% 
 % OUTPUTS：
 % s.list{i}: 第一列事件时刻(APG7400:ns)，第二列输入道，第三列道址
 % s.spec{i}: ch1 第一列为道址，第二列计数
@@ -25,7 +24,7 @@ for i = 1:length(dir1)
     allList = [allList;importdata(dir1(i).name)];
 end
 allList = sortrows(allList); % 按时刻从小到大排序
-ch_low = min(allList(:,2));ch_high = max(allList(:,2));
+ch_low = min(allList(:,2));ch_high = max(allList(:,2)); 
 
 if flag_spec || flag_sep
     for i = ch_low:ch_high
@@ -47,10 +46,16 @@ if ~flag_sep
 end
 
 if sum(strcmp(varargin,'save'))
-    saveName = strsplit(dir1(1).name,'.');
-    saveName = strsplit(saveName{1},'-');
+    % 有"-"则找到最后一个"-"，没有的话找最后一个'.'
+    pos1 = find(dir1(1).name=='-');
+    if isempty(pos1)
+        pos1 = find(dir1(1).name=='.');
+        saveName = dir1(1).name(1:pos1(end)-1);
+    else
+        saveName = dir1(1).name(1:pos1(end)-1);
+    end
     disp('Saving to .mat file...');
-    save(saveName{1},'s');
+    save([saveName,'.mat'],'s');
 end
 disp('Finish reading list data');
 end % of the function
