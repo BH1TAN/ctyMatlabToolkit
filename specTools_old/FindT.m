@@ -1,5 +1,6 @@
 function [t,dis,errorcode] = findt(sig,bkgd,err,tprecision)
-% 本函数不再维护，转移至findcurrie_t,findcurrie_n
+% 本函数不再维护
+% 转移至findcurrie_t,findcurrie_n
 % 为使t*n1和t*n2两个泊松分布的交点作为判别未知数属于哪个分布时，
 % 误报率和漏报率均小于err，所要求的的最小t（使用二分法寻找）
 % 要求n1>n2

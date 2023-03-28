@@ -1,4 +1,4 @@
-function [dataout,HeadData]=readptrac2(filename,outputType,nps,maxEventsPerHistory,nHeadLine)
+function [dataout,HeadData]=readptrac_bkup(filename,outputType,nps,maxEventsPerHistory,nHeadLine)
 % Transform mcnp output file to matlab matrix (3D or 2D)
 % 
 % outputType:

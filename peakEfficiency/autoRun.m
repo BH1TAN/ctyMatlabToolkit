@@ -8,7 +8,6 @@
 % effCurve: 能量（MeV) 总效率 总效率绝对误差 峰效率 峰效率绝对误差
 
 close all;clear;
-% delete('*.i');delete('*.o');delete('*.r');
 tpltFileName = 'tplt.tplt';
 onlyWrite = 0; % 只制作输入文件而不运行MCNP
 onlyRead = 0; % 只读取output文件而不运行MCNP

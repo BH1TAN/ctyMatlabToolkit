@@ -1,6 +1,6 @@
 %% 获取同文件夹下的多个spe能谱信息
-
-dir1 = dir('4817-*.spe');
+clear;close all;
+dir1 = dir('A*.spe');
 tZero= 0; % 首个能谱开始测量时刻(s)
 t_start = cell(1,length(dir1)); % 时间字符串
 t = zeros(1,length(dir1));
@@ -15,7 +15,7 @@ for i = 1:length(dir1)
     t_real(1,i) = s.realtime;
     t_live(1,i) = s.livetime;
     orgnSpec(:,i) = s.spec;
-    if i>1 % 储存重复的能谱
+    if i>1 % 记录重复的能谱序号，最后统一删除
         if isequal(t_start{1,i},t_start{1,i-1})
             pErr = [pErr,i];
         end
@@ -29,9 +29,15 @@ for i = 1:length(t)
     t(1,i) = etime(t_start{1,i},t_start{1,1})+tZero;% 计算测量时刻
 end
 
-figure;
+save('data','orgnSpec','t','t_real','t_live','t_start','dir1');
+
+h = figure;
+yyaxis left
 plot(t,sum(orgnSpec,1),'.-');
 xlabel('Time(s)');
-ylabel('Total count rate(cps/ch)');
+ylabel('Total count per file');
+yyaxis right
+plot(t,sum(orgnSpec,1)./t_live,'.-');
+ylabel('Total count rate (cps)');
+saveas(h,'decayCurve-totalcount.jpg');
 
-save('data','orgnSpec','t','t_real','t_live');

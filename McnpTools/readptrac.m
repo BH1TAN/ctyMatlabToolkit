@@ -1,26 +1,35 @@
-function [dataout,HeadData]=readptrac( outputType,nps,maxEventsPerHistory,nHeadLine )
+function [dataout,HeadData]=readptrac( outputType,nps,maxEventsPerHistory,nHeadLine,filename )
 % Transform mcnp output file to matlab matrix (3D or 2D)
-% 
+% Inputs:
 % outputType:
 %     1: cell, each page contains one history, each row contains all the
 %        information of orginal 2 rows
 %     2: 2D matrix, each row contains all the information of orginal 2 rows
-% nps: Simulated particle number
+% nps: Estimated number of histories in ptrac
 % maxEventsPerHistory: use only for memory allocation
 % nHeadLine: Count of lines before the particle data (like '1 3000' line).      
+% filename: name of the ptrac file
 lineNo = 1;
 
 if(maxEventsPerHistory<=0)
     maxEventsPerHistory = 4000;
 end
+switch nargin
+    case 4
 [filename,pathname]=uigetfile('*.*','Chose a ptrac');%选择你所需要读取的文件
+fp=fullfile(pathname,filename);
+    case 5
+        fp = filename;
+    otherwise
+        error('Invalid input number of readptrac');
+end
 if isequal(filename,0)
     disp('User Canceled');
     return;
 else
-    disp(['User selected--',fullfile(pathname,filename)]);
+    disp(['User selected ptrac file: ',fp]);
 end
-fp=fullfile(pathname,filename);
+
 maxLine= howmanylines(fp);
 fidin=fopen(fp);
 dataout = cell(nps,1);
@@ -61,10 +70,10 @@ while 1
             disp('Success! Finish reading!');
             break;
         end
-        CurrentNPS = DataRow(1,2);
-        if mod(CurrentNPS,100)==0
-            disp(['TransFormat process: ',num2str(CurrentNPS/nps)]);
-        end
+%         CurrentNPS = DataRow(1,2);
+%         if mod(CurrentNPS,100)==0
+%             disp(['TransFormat process: ',num2str(CurrentNPS/nps)]);
+%         end
         FirstEventType = DataRow(1,3);
     else %Event1/Event2 line
         LastHistoryFlag = 1;
@@ -96,6 +105,6 @@ elseif(outputType==2)
     end
     FriendlyData(pp:end,:) = [];
     dataout = FriendlyData;
-    save('CrackedPtrac','-v7.3','FriendlyData','HeadData'); %存储当前矩阵到当前目录
+    save('CrackedPtrac','-v7.3','dataout','HeadData'); %存储当前矩阵到当前目录
 end
 end

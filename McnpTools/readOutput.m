@@ -1,4 +1,6 @@
 function [spec,summary] = readOutput(fileName)
+% 从单探测器响应的MCNP模拟所得到的output文件中，读取能谱部分
+
 spec = [];
 summary = [];
 fidin = fopen(fileName);

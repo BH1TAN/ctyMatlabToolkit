@@ -5,7 +5,7 @@
 % handle_acticity分析活度 或
 
 clear;close all;
-dir1 = dir('AUTO*.spe');
+dir1 = dir('A*.spe');
 tZero= 0; % 首个能谱开始测量时刻(s)
 t_start = cell(1,length(dir1)); % 时间字符串
 t = zeros(1,length(dir1));
@@ -27,6 +27,6 @@ end
 figure;
 plot(t,sum(sgnl,1),'.-');
 xlabel('Time(s)');
-ylabel('Total count rate(cps/ch)');
+ylabel('Total count rate(cps)');
 
 save('data','orgnSpec','t','t_realtime','sgnl','t_start');

@@ -1,21 +1,21 @@
 function newSpec = addGaussbroaden( spec,method,a,b,c )
-% ÎªÄÜÆ×Ôö¼Ó¸ßË¹Õ¹¿í£¬Îª¶à¸öÄÜÆ×Ôö¼Ó¸ßË¹Õ¹¿í¿ÉÒÔÊ¹ÓÃaddGaussbroaden2
+% ä¸ºèƒ½è°±å¢åŠ é«˜æ–¯å±•å®½
 %
 % INPUTS:
-% spec: Ë«ÁĞÄÜÆ×£¬µÚÒ»ÁĞMeVÄÜÁ¿£¬µÚ¶şÁĞ¼ÆÊı
-% method£º1.Æ½»¬Õ¹¿í 2.³éÑù£¨ÒªÇóspecµÚ¶şÁĞÎª×ÔÈ»Êı£©
+% spec: åŒåˆ—èƒ½è°±ï¼Œç¬¬ä¸€åˆ—MeVèƒ½é‡ï¼Œç¬¬äºŒåˆ—è®¡æ•°
+% methodï¼š1.å¹³æ»‘å±•å®½ 2.æŠ½æ ·ï¼ˆè¦æ±‚specç¬¬äºŒåˆ—ä¸ºè‡ªç„¶æ•°ï¼‰
 % a,b,c: parameters in FWHM=a+b*sqrt(E+cE^2)
-%        ÁÖÇ«ÀÏÊ¦pptÍÆ¼öNaI£ºa=0.01 b=0.05 c=0.4
-%        HPGe34#Êµ²â£ºa=0.00173, b=0.00106, c=0.07319
+%        æ—è°¦è€å¸ˆpptæ¨èNaIï¼ša=0.01 b=0.05 c=0.4
+%        HPGe34#å®æµ‹ï¼ša=0.00173, b=0.00106, c=0.07319
 % 
-% OUTPUTS:
-% newspec: µÚÒ»ÁĞMeVÄÜÁ¿£¬µÚ¶şÁĞ¼ÆÊı
+% OUTPUS:
+% newspec: ç¬¬ä¸€åˆ—MeVèƒ½é‡ï¼Œç¬¬äºŒåˆ—è®¡æ•°
 
 newSpec = [spec(:,1),zeros(size(spec,1),1)];
 energyStep = spec(2,1)-spec(1,1);
-countcut = sum(spec(:,2))/(size(spec,1)^2); % countcut: Ğ¡ÓÚ¶àÉÙµÄÊıÊÓÎª0
+countcut = sum(spec(:,2))/(size(spec,1)^2); % countcut: å°äºå¤šå°‘çš„æ•°è§†ä¸º0
 switch method
-    case 1 % Æ½»¬Õ¹¿í
+    case 1 % å¹³æ»‘å±•å®½
         for i = 1:size(spec,1)
             if ~mod(i,100)
                 disp(['Gauss Broadening:',num2str(i),'/',num2str(size(spec,1))]);
@@ -26,23 +26,33 @@ switch method
             fwhm = a+b*sqrt(spec(i,1)+c*spec(i,1)^2);
             sigma = 0.42466*fwhm; % sigma = fwhm/(2*sqrt(2*ln2))
             thisResponse = zeros(size(newSpec,1),1);
-            jFirst = norminv(countcut/sum(spec(:,2)),spec(i,1),sigma); % ¼ÆÊı½Ø¶Ï¶ÔÓ¦µÄÄÜÁ¿ÖµÏÂãĞ
-            jFirst = sum(spec(:,1)<jFirst)+1; % ×îĞ¡½Ø¶Ï¶ÔÓ¦µÄĞĞºÅ
-            jEnd = norminv(1-countcut/sum(spec(:,2)),spec(i,1),sigma); % ¼ÆÊı½Ø¶Ï¶ÔÓ¦µÄÄÜÁ¿ÖµÉÏãĞ
-            jEnd = sum(spec(:,1)<jEnd)+1; % ×îĞ¡½Ø¶Ï¶ÔÓ¦µÄĞĞºÅ
-            for j = jFirst:jEnd
+            jFirst = norminv(countcut/sum(spec(:,2)),spec(i,1),sigma); % è®¡æ•°æˆªæ–­å¯¹åº”çš„èƒ½é‡å€¼
+            jFirst = max([sum(spec(:,1)<jFirst),1]); % æœ€å°æˆªæ–­å¯¹åº”çš„è¡Œå·
+            jFlag = 0;
+            for j = jFirst:size(newSpec,1)
                 if j == 1
                     thisResponse(1,1) = spec(i,2)* ...
                         (normcdf(newSpec(1,1),spec(i,1),sigma) - normcdf(0,spec(i,1),sigma));
                 else
                     thisResponse(j,1) = spec(i,2)* ...
-                        (normcdf(newSpec(j,1),spec(i,1),sigma) - normcdf(newSpec(j-1,1),spec(i,1),sigma));
+                        (normcdf(newSpec(j,1),spec(i,1),sigma)-normcdf(newSpec(j-1,1),spec(i,1),sigma));
+                end
+                if thisResponse(j,1)>countcut
+                    jFlag = 1;
+                end
+                if thisResponse(j,1)<countcut && jFlag ==1
+                    break;
                 end
             end
+            % disp([num2str(i),'/',num2str(size(spec,1))]);
+            %         for j = 1:size(newSpec,1)
+            %             thisResponse(j,1) = spec(i,2)*energyStep* ...
+            %                 exp(-((newSpec(j,1)-spec(i,1))/(sqrt(2)*sigma))^2)/(sigma*sqrt(2*pi));
+            %         end
             newSpec(:,2) = newSpec(:,2)+thisResponse;
         end
-        % newSpec(find(newSpec(:,2)<countcut),2) = 0; % É¾³ı¼ÆÊıĞ¡ÓÚ¼ÆÊı½Ø¶ÏµÄµã
-    case 2 % ³éÑù
+        newSpec(find(newSpec(:,2)<countcut),2) = 0;
+    case 2 % æŠ½æ ·
         spec(:,2) = round(spec(:,2));
         for i = 1:size(spec,1)
             fwhm = a+b*sqrt(spec(i,1)+c*spec(i,1)^2);

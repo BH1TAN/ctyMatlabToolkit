@@ -28,11 +28,9 @@ f = fittype('(area/(sigma*sqrt(2*pi)))*exp(-(t-xpeak)^2/(2*sigma^2))+intercept+s
     'independent','t','coefficients',{'area','sigma','xpeak','intercept','slope'});
 options = fitoptions('Method','NonlinearLeastSquares');
 originalPeak = x(find(y==max(y))); originalPeak = originalPeak(1,1);
-options.Lower = [1e-5,originalPeak*0.001/2.355,originalPeak-2,y(1),min([10*(y(end)-y(1))/(x(end)-x(1)),-Inf])];
-%options.Lower = [1e-5,0.01,originalPeak-5,0,-Inf];
-%options.Upper = [Inf,Inf,originalPeak+5,Inf,0];
+options.Lower = [1e-9,originalPeak*0.0001/2.355,originalPeak-5,y(1),min([10*(y(end)-y(1))/(x(end)-x(1)),-Inf])];
 options.Upper = [Inf,originalPeak*0.05/2.355,originalPeak+5,Inf,0];
-options.StartPoint = [sum(y)-length(x)*(y(1)+y(end))/2,originalPeak*0.005/2.355,originalPeak,y(1)-x(1)*(y(end)-y(1))/(x(end)-x(1)),(y(end)-y(1))/(x(end)-x(1))];
+options.StartPoint = [sum(y)-length(x)*(y(1)+y(end))/2,originalPeak*0.005/2.355,1696.6,y(1)-x(1)*(y(end)-y(1))/(x(end)-x(1)),(y(end)-y(1))/(x(end)-x(1))];
 cfun = fit(x,y,f,options);
 
 area = cfun.area;
@@ -54,7 +52,8 @@ plot([xpeak,xpeak],[min(y),max(y)],'r--');
 plot([min(x),max(x)],[intercept+slope*min(x),intercept+slope*max(x)],'r--');
 plot([round(cfun.xpeak-0.5*fwtm),round(cfun.xpeak-0.5*fwtm)],[min(y),max(y)],'g--');
 plot([round(cfun.xpeak+0.5*fwtm),round(cfun.xpeak+0.5*fwtm)],[min(y),max(y)],'g--');
-xlabel('Channel');ylabel('Count(#/ch)');
+xlabel('Channel');ylabel('Count per channel');
+xlim([x(1),x(end)]);
 %     title({'Expression: $y=\frac{A}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\bar{x})^2}{2\sigma^2}}+a+b*x$'; ...
 %         ['peakPos=',num2str(xpeak,'%.1f')]; ...
 %         ['gross area=',num2str(sum(y))];
@@ -69,7 +68,7 @@ text(x(1),0.5*(max(y)+min(y)),{'Expression: $y=\frac{A}{\sqrt{2\pi}\sigma}e^{-\f
     ['net area=',num2str(area,'%.5f')]; ...
     ['bkgd area=',num2str(bkgd,'%.5f')]; ...
     ['FWHM=',num2str(2.355*sigma,'%.1f')]; ...
-    ['Relative resolution=',num2str(2.355*sigma/xpeak,2)]}, ...
+    ['Relative resolution=',num2str(2.355*sigma/xpeak,'%.5f')]}, ...
     'Interpreter','latex');
 if plotOrNot
     set(h,'visible','on');
